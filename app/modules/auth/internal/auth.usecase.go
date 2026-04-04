@@ -5,7 +5,6 @@ import (
 
 	"github.com/longtk26/template-frameworks.git/app/modules/auth/dto"
 	"github.com/longtk26/template-frameworks.git/app/modules/database"
-	"github.com/longtk26/template-frameworks.git/app/modules/users/domain/entity"
 	"github.com/longtk26/template-frameworks.git/app/modules/users/ports"
 	"github.com/longtk26/template-frameworks.git/pkg/exceptions"
 	libPassword "github.com/longtk26/template-frameworks.git/pkg/passwords"
@@ -16,17 +15,20 @@ type AuthUseCase struct {
 	transaction *database.TransactionStruct
 	logger      zerolog.Logger
 	us          ports.IUserService
+	mapper      *AuthMapper
 }
 
 func NewAuthUseCase(
 	tx *database.TransactionStruct,
 	logger zerolog.Logger,
 	userService ports.IUserService,
+	mapper *AuthMapper,
 ) *AuthUseCase {
 	return &AuthUseCase{
 		transaction: tx,
 		logger:      logger,
 		us:          userService,
+		mapper:      mapper,
 	}
 }
 
@@ -37,9 +39,9 @@ func (uc *AuthUseCase) SignUp(payload dto.SignUpRequestDto) (dto.SignUpResponseD
 		return dto.SignUpResponseDto{}, exceptions.ErrInternalServerError("Failed to hash password", err)
 	}
 
-	userEntity := entity.NewUserEntityFromSignUpRequestDto(dto.SignUpRequestDto{
-		Username: payload.Username,
+	userEntity := uc.mapper.MapSignUpRequestDtoToUserEntity(dto.SignUpRequestDto{
 		Email:    payload.Email,
+		Username: payload.Username,
 		Password: hashPass,
 	})
 

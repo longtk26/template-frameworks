@@ -11,6 +11,7 @@ func NewAuthModule() fx.Option {
 			authInternal.NewAuthRouter,
 			authInternal.NewAuthPresenter,
 			authInternal.NewAuthUseCase,
+			authInternal.NewAuthMapper,
 		),
 		fx.Invoke(
 			authInternal.RegisterRoutes,
