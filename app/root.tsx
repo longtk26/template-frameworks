@@ -9,7 +9,10 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { dehydrate } from "@tanstack/react-query";
 import i18nextServer from "./i18n.server";
+import { createQueryClient } from "./lib/query-client";
+import { QueryProvider } from "./provider/query-provider";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -29,7 +32,15 @@ export const links: Route.LinksFunction = () => [
 
 export async function loader({ request }: Route.LoaderArgs) {
     const locale = await i18nextServer.getLocale(request);
-    return { locale };
+
+    // Create a per-request QueryClient and dehydrate it so the client
+    // can rehydrate the same cache without re-fetching on first render.
+    const queryClient = createQueryClient();
+    // Prefetch any global queries here (e.g. auth session, feature flags).
+    // Example: await queryClient.prefetchQuery(sessionQueries.current());
+    const dehydratedState = dehydrate(queryClient);
+
+    return { locale, dehydratedState };
 }
 
 export const handle = {
@@ -59,7 +70,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Links />
             </head>
             <body>
-                {children}
+                <QueryProvider dehydratedState={data?.dehydratedState}>
+                    {children}
+                </QueryProvider>
                 <ScrollRestoration />
                 <Scripts />
             </body>
