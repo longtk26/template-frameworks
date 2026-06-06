@@ -8,7 +8,7 @@ from alembic import context
 from sqlmodel import SQLModel  
 
 # Import all models here so Alembic can detect them
-import src.models  # noqa: F401
+import src.modules.shared.infrastructure.models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
